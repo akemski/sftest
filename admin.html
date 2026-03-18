@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Silent Force — Admin</title>
+  <style>
+    :root {
+      --bg: #07090c;
+      --panel: rgba(14, 18, 24, 0.95);
+      --panel-2: rgba(20, 25, 32, 0.95);
+      --line: rgba(130, 150, 180, 0.18);
+      --text: #d9e1ea;
+      --muted: #7f8a97;
+      --accent: #8aa0b8;
+      --danger: #b35b5b;
+      --ok: #8fb29a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(70, 80, 95, 0.10), transparent 30%),
+        linear-gradient(180deg, #05070a 0%, #07090c 100%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      font-size: 12px;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .pill {
+      border: 1px solid var(--line);
+      padding: 8px 12px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--accent);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      padding: 22px;
+      margin-bottom: 18px;
+    }
+
+    h1, h2 {
+      margin: 0 0 12px 0;
+      font-weight: 600;
+    }
+
+    h1 {
+      font-size: 28px;
+    }
+
+    h2 {
+      font-size: 18px;
+    }
+
+    p {
+      margin: 0 0 12px 0;
+      line-height: 1.6;
+      color: var(--text);
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .form {
+      display: grid;
+      gap: 12px;
+      max-width: 460px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid var(--line);
+      background: rgba(4, 7, 10, 0.85);
+      color: var(--text);
+      outline: none;
+      font-size: 15px;
+    }
+
+    button {
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 14px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    button:hover {
+      background: rgba(255,255,255,0.08);
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .message {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.02);
+      font-size: 14px;
+      line-height: 1.5;
+      white-space: pre-line;
+    }
+
+    .error {
+      border-color: rgba(179, 91, 91, 0.3);
+      color: #d8b0b0;
+    }
+
+    .success {
+      border-color: rgba(143, 178, 154, 0.3);
+      color: #bdd7c4;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .stat-card {
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      padding: 16px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 14px 0;
+      flex-wrap: wrap;
+    }
+
+    .toolbar input {
+      max-width: 320px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      min-width: 760px;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 12px 10px;
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 8px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+      margin: 2px 4px 2px 0;
+      font-size: 12px;
+      color: var(--accent);
+    }
+
+    .danger-zone {
+      border-color: rgba(179, 91, 91, 0.25);
+    }
+
+    .small {
+      font-size: 12px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">Silent Force / Admin Access</div>
+      <div class="pill" id="topStatus">Admin getrennt</div>
+    </div>
+
+    <!-- ADMIN LOGIN -->
+    <section class="panel" id="adminLoginSection">
+      <h1>Admin-Zugriff</h1>
+      <p class="muted">
+        Nur für interne Nutzung. Diese Seite ist zum Überblick über Registrierungen und Fortschritt.
+      </p>
+
+      <div class="form">
+        <input id="adminPasswordInput" type="password" placeholder="Admin Passwort" />
+        <div class="row">
+          <button id="adminLoginBtn">Admin verbinden</button>
+        </div>
+      </div>
+
+      <div id="adminLoginMessage" class="message hidden"></div>
+    </section>
+
+    <!-- DASHBOARD -->
+    <section class="panel hidden" id="adminDashboardSection">
+      <h2>Teilnahme-Übersicht</h2>
+      <p class="muted">
+        Hier siehst du alle registrierten Nutzer, Fortschritt, gelöste Codes und letzte Aktivität.
+      </p>
+
+      <div class="stats">
+        <div class="stat-card">
+          <div class="stat-label">Registrierte Nutzer</div>
+          <div class="stat-value" id="totalUsersStat">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Ø Fortschritt</div>
+          <div class="stat-value" id="avgProgressStat">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Höchster Fortschritt</div>
+          <div class="stat-value" id="maxProgressStat">0</div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <input id="searchInput" type="text" placeholder="Nach Username suchen..." />
+        <div class="row">
+          <button id="refreshBtn">Neu laden</button>
+          <button id="logoutBtn">Admin trennen</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Fortschritt</th>
+              <th>Signalstatus</th>
+              <th>Gelöste Codes</th>
+              <th>Erstellt</th>
+              <th>Zuletzt aktiv</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody"></tbody>
+        </table>
+      </div>
+
+      <p class="small" style="margin-top: 12px;">
+        Hinweis: Diese Version nutzt clientseitigen Admin-Schutz. Für später wäre eine sichere Admin-Rolle oder eine serverseitige Lösung besser.
+      </p>
+    </section>
+
+    <!-- OPTIONAL SIMPLE USER EDIT -->
+    <section class="panel hidden danger-zone" id="userEditSection">
+      <h2>User bearbeiten</h2>
+      <p class="muted">
+        Optional, falls du später Fortschritt manuell anpassen willst.
+      </p>
+
+      <div class="form">
+        <input id="editUsername" type="text" placeholder="Username" />
+        <input id="editProgress" type="number" min="1" placeholder="Neuer Fortschritt" />
+        <input id="editSignalState" type="text" placeholder="Neuer Signalstatus, z. B. Stabil" />
+        <div class="row">
+          <button id="updateUserBtn">User aktualisieren</button>
+        </div>
+      </div>
+
+      <div id="editMessage" class="message hidden"></div>
+    </section>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      getDocs,
+      doc,
+      getDoc,
+      updateDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    // =========================================================
+    // FIREBASE CONFIG
+    // =========================================================
+    const firebaseConfig = {
+      apiKey: "DEIN_API_KEY",
+      authDomain: "DEIN_AUTH_DOMAIN",
+      projectId: "DEIN_PROJECT_ID",
+      storageBucket: "DEIN_STORAGE_BUCKET",
+      messagingSenderId: "DEIN_MESSAGING_SENDER_ID",
+      appId: "DEINE_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // =========================================================
+    // ADMIN SETTINGS
+    // =========================================================
+    // Für den Start zuhause okay.
+    // Später besser NICHT im Frontend speichern.
+    const ADMIN_PASSWORD = "silentforce-admin-2026";
+
+    // =========================================================
+    // ELEMENTS
+    // =========================================================
+    const topStatus = document.getElementById("topStatus");
+
+    const adminLoginSection = document.getElementById("adminLoginSection");
+    const adminDashboardSection = document.getElementById("adminDashboardSection");
+    const userEditSection = document.getElementById("userEditSection");
+
+    const adminPasswordInput = document.getElementById("adminPasswordInput");
+    const adminLoginBtn = document.getElementById("adminLoginBtn");
+    const adminLoginMessage = document.getElementById("adminLoginMessage");
+
+    const totalUsersStat = document.getElementById("totalUsersStat");
+    const avgProgressStat = document.getElementById("avgProgressStat");
+    const maxProgressStat = document.getElementById("maxProgressStat");
+
+    const searchInput = document.getElementById("searchInput");
+    const refreshBtn = document.getElementById("refreshBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const usersTableBody = document.getElementById("usersTableBody");
+
+    const editUsername = document.getElementById("editUsername");
+    const editProgress = document.getElementById("editProgress");
+    const editSignalState = document.getElementById("editSignalState");
+    const updateUserBtn = document.getElementById("updateUserBtn");
+    const editMessage = document.getElementById("editMessage");
+
+    let allUsers = [];
+
+    // =========================================================
+    // HELPERS
+    // =========================================================
+    function setMessage(el, text, type = "") {
+      el.textContent = text;
+      el.className = `message ${type}`.trim();
+      el.classList.remove("hidden");
+    }
+
+    function clearMessage(el) {
+      el.textContent = "";
+      el.className = "message hidden";
+    }
+
+    function showAdminView() {
+      adminLoginSection.classList.add("hidden");
+      adminDashboardSection.classList.remove("hidden");
+      userEditSection.classList.remove("hidden");
+      topStatus.textContent = "Admin aktiv";
+    }
+
+    function showLoginView() {
+      adminLoginSection.classList.remove("hidden");
+      adminDashboardSection.classList.add("hidden");
+      userEditSection.classList.add("hidden");
+      topStatus.textContent = "Admin getrennt";
+    }
+
+    function formatDate(value) {
+      if (!value) return "—";
+
+      try {
+        if (typeof value.toDate === "function") {
+          return value.toDate().toLocaleString("de-DE");
+        }
+
+        const parsed = new Date(value);
+        if (!isNaN(parsed)) {
+          return parsed.toLocaleString("de-DE");
+        }
+
+        return "—";
+      } catch {
+        return "—";
+      }
+    }
+
+    function escapeHtml(str = "") {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function renderStats(users) {
+      const total = users.length;
+      const progresses = users.map(u => Number(u.progress || 0));
+      const sum = progresses.reduce((a, b) => a + b, 0);
+      const avg = total ? (sum / total).toFixed(1) : 0;
+      const max = total ? Math.max(...progresses) : 0;
+
+      totalUsersStat.textContent = total;
+      avgProgressStat.textContent = avg;
+      maxProgressStat.textContent = max;
+    }
+
+    function renderTable(users) {
+      if (!users.length) {
+        usersTableBody.innerHTML = `
+          <tr>
+            <td colspan="6">Keine Daten gefunden.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      usersTableBody.innerHTML = users.map(user => {
+        const solved = Array.isArray(user.solved) ? user.solved : [];
+        const solvedHtml = solved.length
+          ? solved.map(code => `<span class="tag">${escapeHtml(code)}</span>`).join("")
+          : "—";
+
+        return `
+          <tr>
+            <td>${escapeHtml(user.username || "—")}</td>
+            <td>${escapeHtml(String(user.progress || 0))}</td>
+            <td>${escapeHtml(user.signalState || "—")}</td>
+            <td>${solvedHtml}</td>
+            <td>${escapeHtml(formatDate(user.createdAt))}</td>
+            <td>${escapeHtml(formatDate(user.updatedAt))}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    async function loadUsers() {
+      const snapshot = await getDocs(collection(db, "users"));
+      allUsers = snapshot.docs.map(docSnap => ({
+        id: docSnap.id,
+        ...docSnap.data()
+      }));
+
+      allUsers.sort((a, b) => {
+        const aTime = a.updatedAt?.toDate?.()?.getTime?.() || 0;
+        const bTime = b.updatedAt?.toDate?.()?.getTime?.() || 0;
+        return bTime - aTime;
+      });
+
+      renderStats(allUsers);
+      renderTable(allUsers);
+    }
+
+    function filterUsers() {
+      const term = searchInput.value.trim().toLowerCase();
+
+      if (!term) {
+        renderTable(allUsers);
+        return;
+      }
+
+      const filtered = allUsers.filter(user =>
+        String(user.username || "").toLowerCase().includes(term)
+      );
+
+      renderTable(filtered);
+    }
+
+    // =========================================================
+    // LOGIN
+    // =========================================================
+    adminLoginBtn.addEventListener("click", async () => {
+      clearMessage(adminLoginMessage);
+
+      const entered = adminPasswordInput.value;
+      if (entered !== ADMIN_PASSWORD) {
+        setMessage(adminLoginMessage, "Admin-Zugriff verweigert.", "error");
+        return;
+      }
+
+      try {
+        await loadUsers();
+        sessionStorage.setItem("silentForceAdmin", "true");
+        showAdminView();
+        setMessage(adminLoginMessage, "Admin verbunden.", "success");
+      } catch (err) {
+        console.error(err);
+        setMessage(adminLoginMessage, "Fehler beim Laden der Daten.", "error");
+      }
+    });
+
+    adminPasswordInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") adminLoginBtn.click();
+    });
+
+    // =========================================================
+    // TOOLBAR
+    // =========================================================
+    refreshBtn.addEventListener("click", async () => {
+      await loadUsers();
+      filterUsers();
+    });
+
+    searchInput.addEventListener("input", filterUsers);
+
+    logoutBtn.addEventListener("click", () => {
+      sessionStorage.removeItem("silentForceAdmin");
+      adminPasswordInput.value = "";
+      showLoginView();
+    });
+
+    // =========================================================
+    // OPTIONAL USER UPDATE
+    // =========================================================
+    updateUserBtn.addEventListener("click", async () => {
+      clearMessage(editMessage);
+
+      const username = editUsername.value.trim();
+      const progress = Number(editProgress.value);
+      const signalState = editSignalState.value.trim();
+
+      if (!username) {
+        setMessage(editMessage, "Bitte einen Username eingeben.", "error");
+        return;
+      }
+
+      try {
+        const ref = doc(db, "users", username);
+        const snap = await getDoc(ref);
+
+        if (!snap.exists()) {
+          setMessage(editMessage, "User nicht gefunden.", "error");
+          return;
+        }
+
+        const updates = {
+          updatedAt: serverTimestamp()
+        };
+
+        if (!isNaN(progress) && progress > 0) {
+          updates.progress = progress;
+        }
+
+        if (signalState) {
+          updates.signalState = signalState;
+        }
+
+        await updateDoc(ref, updates);
+
+        setMessage(editMessage, "User aktualisiert.", "success");
+        await loadUsers();
+        filterUsers();
+      } catch (err) {
+        console.error(err);
+        setMessage(editMessage, "Fehler beim Aktualisieren.", "error");
+      }
+    });
+
+    // =========================================================
+    // BOOT
+    // =========================================================
+    async function boot() {
+      const adminSession = sessionStorage.getItem("silentForceAdmin");
+
+      if (adminSession === "true") {
+        try {
+          await loadUsers();
+          showAdminView();
+          return;
+        } catch (err) {
+          console.error(err);
+          sessionStorage.removeItem("silentForceAdmin");
+        }
+      }
+
+      showLoginView();
+    }
+
+    boot();
+  </script>
+</body>
+</html>
