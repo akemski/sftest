@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Silent Force — Signal Access</title>
+  <style>
+    :root {
+      --bg: #07090c;
+      --panel: rgba(14, 18, 24, 0.92);
+      --panel-2: rgba(20, 25, 32, 0.95);
+      --line: rgba(130, 150, 180, 0.18);
+      --text: #d9e1ea;
+      --muted: #7f8a97;
+      --accent: #8aa0b8;
+      --danger: #b35b5b;
+      --ok: #8fb29a;
+      --glow: 0 0 40px rgba(138, 160, 184, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top, rgba(70, 80, 95, 0.10), transparent 30%),
+        linear-gradient(180deg, #05070a 0%, #07090c 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .shell {
+      width: 100%;
+      max-width: 760px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: var(--glow);
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .shell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(to bottom, rgba(255,255,255,0.015), transparent 25%),
+        repeating-linear-gradient(
+          to bottom,
+          transparent 0,
+          transparent 2px,
+          rgba(255,255,255,0.01) 3px,
+          transparent 4px
+        );
+      opacity: 0.45;
+    }
+
+    .topline {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .brand {
+      font-size: 12px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .status-pill {
+      border: 1px solid var(--line);
+      padding: 6px 10px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--accent);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      padding: 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    h1, h2 {
+      margin: 0 0 10px 0;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 14px;
+    }
+
+    h2 {
+      font-size: 20px;
+      margin-bottom: 12px;
+    }
+
+    p {
+      margin: 0 0 14px 0;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .fragment {
+      margin: 18px 0 22px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.02);
+      font-family: "Courier New", monospace;
+      white-space: pre-line;
+      line-height: 1.8;
+      letter-spacing: 0.04em;
+    }
+
+    .form {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 14px;
+      border: 1px solid var(--line);
+      background: rgba(4, 7, 10, 0.8);
+      color: var(--text);
+      outline: none;
+      font-size: 15px;
+    }
+
+    input:focus {
+      border-color: rgba(138, 160, 184, 0.45);
+      box-shadow: 0 0 0 1px rgba(138, 160, 184, 0.16);
+    }
+
+    button {
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 14px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      transition: 0.18s ease;
+    }
+
+    button:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(138, 160, 184, 0.35);
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .row button {
+      flex: 1;
+      min-width: 180px;
+    }
+
+    .message {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.02);
+      font-size: 14px;
+      line-height: 1.5;
+      white-space: pre-line;
+    }
+
+    .message.error {
+      border-color: rgba(179, 91, 91, 0.3);
+      color: #d8b0b0;
+    }
+
+    .message.success {
+      border-color: rgba(143, 178, 154, 0.3);
+      color: #bdd7c4;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.02);
+      padding: 16px;
+    }
+
+    .small-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .big {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <div class="topline">
+      <div class="brand">Silent Force / Signal Access</div>
+      <div class="status-pill" id="globalStatus">Unvollständige Daten</div>
+    </div>
+
+    <!-- PUBLIC ENTRY -->
+    <section class="panel" id="publicSection">
+      <h1>Signal erkannt.</h1>
+      <p class="muted">
+        Unvollständige Daten wurden gesichert. Wenn du einen gültigen Code hast,
+        kannst du den Zugriff fortsetzen.
+      </p>
+
+      <div class="fragment">
+Signal #01 wurde empfangen.
+Unvollständig.
+
+54. _ _
+- _ . 3 _
+
+Einige sehen mehr als andere.
+Wenn du die fehlenden Teile findest, folge dem Signal.
+      </div>
+
+      <div class="form">
+        <input id="puzzleCodeInput" type="text" placeholder="Signal Code eingeben" autocomplete="off" />
+        <button id="checkPuzzleCodeBtn">Verbindung prüfen</button>
+      </div>
+
+      <div id="publicMessage" class="message hidden"></div>
+    </section>
+
+    <!-- AUTH CHOICE -->
+    <section class="panel hidden" id="authChoiceSection">
+      <h2>Signal akzeptiert.</h2>
+      <p>
+        Weitere Daten sind geschützt. Zugriff erfordert eine Kennung.
+      </p>
+      <div class="row">
+        <button id="showRegisterBtn">Kennung erstellen</button>
+        <button id="showLoginBtn">Verbindung fortsetzen</button>
+      </div>
+      <div id="authChoiceMessage" class="message hidden"></div>
+    </section>
+
+    <!-- REGISTER -->
+    <section class="panel hidden" id="registerSection">
+      <h2>Kennung erstellen</h2>
+      <p class="muted">
+        Nicht jeder kann auf das Signal zugreifen. Erstelle eine Kennung, um fortzufahren.
+      </p>
+
+      <div class="form">
+        <input id="registerUsername" type="text" placeholder="Username" autocomplete="off" />
+        <input id="registerPassword" type="password" placeholder="Passwort" autocomplete="off" />
+        <div class="row">
+          <button id="registerBtn">Verbindung herstellen</button>
+          <button id="backToChoiceFromRegisterBtn" type="button">Zurück</button>
+        </div>
+      </div>
+
+      <div id="registerMessage" class="message hidden"></div>
+    </section>
+
+    <!-- LOGIN -->
+    <section class="panel hidden" id="loginSection">
+      <h2>Verbindung wiederherstellen</h2>
+      <p class="muted">
+        Zugangsdaten erkannt. Stelle die Verbindung erneut her.
+      </p>
+
+      <div class="form">
+        <input id="loginUsername" type="text" placeholder="Username" autocomplete="off" />
+        <input id="loginPassword" type="password" placeholder="Passwort" autocomplete="off" />
+        <div class="row">
+          <button id="loginBtn">Anmelden am Signal</button>
+          <button id="backToChoiceFromLoginBtn" type="button">Zurück</button>
+        </div>
+      </div>
+
+      <div id="loginMessage" class="message hidden"></div>
+    </section>
+
+    <!-- DASHBOARD -->
+    <section class="panel hidden" id="dashboardSection">
+      <h2>Signal aktiv.</h2>
+      <p id="welcomeText" class="muted"></p>
+
+      <div class="dashboard-grid">
+        <div class="card">
+          <div class="small-label">Status</div>
+          <div class="big" id="signalState">Stabil</div>
+        </div>
+
+        <div class="card">
+          <div class="small-label">Fortschritt</div>
+          <div id="progressText">Aktivierung 1 abgeschlossen.</div>
+        </div>
+
+        <div class="card">
+          <div class="small-label">Neue Daten</div>
+          <p id="nextSignalText">
+            Weitere Daten werden später bereitgestellt.
+            Hier kannst du später Rätsel 2, Storyfragmente oder neue Codes einbauen.
+          </p>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top: 18px;">
+        <button id="logoutBtn">Verbindung trennen</button>
+      </div>
+
+      <div class="footer-note">
+        Später kannst du hier Leaderboard, weitere Aktivierungen und personalisierte Nachrichten einbauen.
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc,
+      updateDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    // =========================================================
+    // 1) FIREBASE CONFIG HIER EINTRAGEN
+    // =========================================================
+    const firebaseConfig = {
+      apiKey: "DEIN_API_KEY",
+      authDomain: "DEIN_AUTH_DOMAIN",
+      projectId: "DEIN_PROJECT_ID",
+      storageBucket: "DEIN_STORAGE_BUCKET",
+      messagingSenderId: "DEIN_MESSAGING_SENDER_ID",
+      appId: "DEINE_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // =========================================================
+    // 2) EINSTELLUNGEN
+    // =========================================================
+    // Code für Rätsel 1
+    const FIRST_PUZZLE_CODE = "valedale";
+
+    // =========================================================
+    // 3) ELEMENTE
+    // =========================================================
+    const globalStatus = document.getElementById("globalStatus");
+
+    const publicSection = document.getElementById("publicSection");
+    const authChoiceSection = document.getElementById("authChoiceSection");
+    const registerSection = document.getElementById("registerSection");
+    const loginSection = document.getElementById("loginSection");
+    const dashboardSection = document.getElementById("dashboardSection");
+
+    const puzzleCodeInput = document.getElementById("puzzleCodeInput");
+    const checkPuzzleCodeBtn = document.getElementById("checkPuzzleCodeBtn");
+    const publicMessage = document.getElementById("publicMessage");
+
+    const showRegisterBtn = document.getElementById("showRegisterBtn");
+    const showLoginBtn = document.getElementById("showLoginBtn");
+    const authChoiceMessage = document.getElementById("authChoiceMessage");
+
+    const registerUsername = document.getElementById("registerUsername");
+    const registerPassword = document.getElementById("registerPassword");
+    const registerBtn = document.getElementById("registerBtn");
+    const backToChoiceFromRegisterBtn = document.getElementById("backToChoiceFromRegisterBtn");
+    const registerMessage = document.getElementById("registerMessage");
+
+    const loginUsername = document.getElementById("loginUsername");
+    const loginPassword = document.getElementById("loginPassword");
+    const loginBtn = document.getElementById("loginBtn");
+    const backToChoiceFromLoginBtn = document.getElementById("backToChoiceFromLoginBtn");
+    const loginMessage = document.getElementById("loginMessage");
+
+    const welcomeText = document.getElementById("welcomeText");
+    const signalState = document.getElementById("signalState");
+    const progressText = document.getElementById("progressText");
+    const nextSignalText = document.getElementById("nextSignalText");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    // =========================================================
+    // 4) STATE
+    // =========================================================
+    let passedPublicCode = false;
+    let currentUser = null;
+
+    // =========================================================
+    // 5) HILFSFUNKTIONEN
+    // =========================================================
+    function hideAllSections() {
+      [publicSection, authChoiceSection, registerSection, loginSection, dashboardSection]
+        .forEach(section => section.classList.add("hidden"));
+    }
+
+    function showSection(section) {
+      hideAllSections();
+      section.classList.remove("hidden");
+    }
+
+    function setMessage(el, text, type = "") {
+      el.textContent = text;
+      el.className = `message ${type}`.trim();
+      el.classList.remove("hidden");
+    }
+
+    function clearMessage(el) {
+      el.textContent = "";
+      el.className = "message hidden";
+    }
+
+    function normalizeInput(value) {
+      return value.trim().toLowerCase();
+    }
+
+    async function hashText(text) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(text);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function saveSession(username) {
+      localStorage.setItem("silentForceUser", username);
+    }
+
+    function clearSession() {
+      localStorage.removeItem("silentForceUser");
+    }
+
+    function getSession() {
+      return localStorage.getItem("silentForceUser");
+    }
+
+    async function loadUser(username) {
+      const ref = doc(db, "users", username);
+      const snap = await getDoc(ref);
+      return snap.exists() ? snap.data() : null;
+    }
+
+    async function renderDashboard(username) {
+      const user = await loadUser(username);
+      if (!user) {
+        clearSession();
+        currentUser = null;
+        globalStatus.textContent = "Unvollständige Daten";
+        showSection(publicSection);
+        return;
+      }
+
+      currentUser = { username, ...user };
+      globalStatus.textContent = "Signal aktiv";
+
+      welcomeText.textContent = `Verbindung erkannt: ${username}`;
+      signalState.textContent = user.signalState || "Stabil";
+      progressText.textContent = `Aktivierungen abgeschlossen: ${user.progress || 1}`;
+
+      if ((user.progress || 1) === 1) {
+        nextSignalText.textContent =
+          "Weitere Daten werden später bereitgestellt. Hier kannst du später Rätsel 2, ein Storyfragment oder einen neuen Code einbauen.";
+      } else {
+        nextSignalText.textContent =
+          "Zusätzliche Daten wurden erkannt. Weitere Aktivierungen verfügbar.";
+      }
+
+      showSection(dashboardSection);
+    }
+
+    // =========================================================
+    // 6) PUBLIC CODE CHECK
+    // =========================================================
+    checkPuzzleCodeBtn.addEventListener("click", () => {
+      clearMessage(publicMessage);
+
+      const input = normalizeInput(puzzleCodeInput.value);
+      if (!input) {
+        setMessage(publicMessage, "Signal unvollständig.\nGib einen Code ein.", "error");
+        return;
+      }
+
+      if (input === FIRST_PUZZLE_CODE) {
+        passedPublicCode = true;
+        globalStatus.textContent = "Signal akzeptiert";
+        showSection(authChoiceSection);
+      } else {
+        setMessage(
+          publicMessage,
+          "Signal fehlerhaft.\nDie Eingabe konnte nicht bestätigt werden.",
+          "error"
+        );
+      }
+    });
+
+    puzzleCodeInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") checkPuzzleCodeBtn.click();
+    });
+
+    // =========================================================
+    // 7) NAVIGATION
+    // =========================================================
+    showRegisterBtn.addEventListener("click", () => {
+      clearMessage(registerMessage);
+      showSection(registerSection);
+    });
+
+    showLoginBtn.addEventListener("click", () => {
+      clearMessage(loginMessage);
+      showSection(loginSection);
+    });
+
+    backToChoiceFromRegisterBtn.addEventListener("click", () => {
+      clearMessage(registerMessage);
+      showSection(authChoiceSection);
+    });
+
+    backToChoiceFromLoginBtn.addEventListener("click", () => {
+      clearMessage(loginMessage);
+      showSection(authChoiceSection);
+    });
+
+    // =========================================================
+    // 8) REGISTRIERUNG
+    // =========================================================
+    registerBtn.addEventListener("click", async () => {
+      clearMessage(registerMessage);
+
+      if (!passedPublicCode) {
+        setMessage(registerMessage, "Zugriff verweigert.\nSignal wurde nicht bestätigt.", "error");
+        return;
+      }
+
+      const username = registerUsername.value.trim();
+      const password = registerPassword.value;
+
+      if (username.length < 3) {
+        setMessage(registerMessage, "Username muss mindestens 3 Zeichen lang sein.", "error");
+        return;
+      }
+
+      if (password.length < 4) {
+        setMessage(registerMessage, "Passwort muss mindestens 4 Zeichen lang sein.", "error");
+        return;
+      }
+
+      try {
+        const ref = doc(db, "users", username);
+        const existing = await getDoc(ref);
+
+        if (existing.exists()) {
+          setMessage(registerMessage, "Kennung bereits vorhanden.\nWähle einen anderen Username.", "error");
+          return;
+        }
+
+        const passwordHash = await hashText(password);
+
+        await setDoc(ref, {
+          username,
+          passwordHash,
+          progress: 1,
+          solved: [FIRST_PUZZLE_CODE],
+          signalState: "Stabil",
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        });
+
+        saveSession(username);
+        setMessage(registerMessage, "Verbindung hergestellt.\nZugriff wird initialisiert.", "success");
+
+        setTimeout(() => {
+          renderDashboard(username);
+        }, 700);
+      } catch (err) {
+        console.error(err);
+        setMessage(registerMessage, "Fehler beim Herstellen der Verbindung.", "error");
+      }
+    });
+
+    // =========================================================
+    // 9) LOGIN
+    // =========================================================
+    loginBtn.addEventListener("click", async () => {
+      clearMessage(loginMessage);
+
+      const username = loginUsername.value.trim();
+      const password = loginPassword.value;
+
+      if (!username || !password) {
+        setMessage(loginMessage, "Bitte Username und Passwort eingeben.", "error");
+        return;
+      }
+
+      try {
+        const user = await loadUser(username);
+
+        if (!user) {
+          setMessage(loginMessage, "Kennung nicht gefunden.", "error");
+          return;
+        }
+
+        const enteredHash = await hashText(password);
+
+        if (enteredHash !== user.passwordHash) {
+          setMessage(loginMessage, "Zugriff verweigert.\nDie Verbindung konnte nicht bestätigt werden.", "error");
+          return;
+        }
+
+        saveSession(username);
+        await updateDoc(doc(db, "users", username), {
+          updatedAt: serverTimestamp()
+        });
+
+        setMessage(loginMessage, "Verbindung erkannt.\nZugang wird wiederhergestellt.", "success");
+
+        setTimeout(() => {
+          renderDashboard(username);
+        }, 700);
+      } catch (err) {
+        console.error(err);
+        setMessage(loginMessage, "Fehler beim Wiederherstellen der Verbindung.", "error");
+      }
+    });
+
+    // =========================================================
+    // 10) LOGOUT
+    // =========================================================
+    logoutBtn.addEventListener("click", () => {
+      currentUser = null;
+      clearSession();
+      passedPublicCode = false;
+      globalStatus.textContent = "Unvollständige Daten";
+
+      puzzleCodeInput.value = "";
+      registerUsername.value = "";
+      registerPassword.value = "";
+      loginUsername.value = "";
+      loginPassword.value = "";
+
+      clearMessage(publicMessage);
+      clearMessage(authChoiceMessage);
+      clearMessage(registerMessage);
+      clearMessage(loginMessage);
+
+      showSection(publicSection);
+    });
+
+    // =========================================================
+    // 11) SESSION AUTO-LOGIN
+    // =========================================================
+    async function boot() {
+      const savedUser = getSession();
+
+      if (savedUser) {
+        try {
+          await renderDashboard(savedUser);
+          return;
+        } catch (err) {
+          console.error(err);
+          clearSession();
+        }
+      }
+
+      showSection(publicSection);
+    }
+
+    boot();
+  </script>
+</body>
+</html>
